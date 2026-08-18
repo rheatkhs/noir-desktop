@@ -1,5 +1,8 @@
 mod commands;
+mod providers;
 mod schema;
+mod streaming;
+mod types;
 
 use tauri_plugin_sql::{Migration, MigrationKind};
 
@@ -33,6 +36,7 @@ pub fn run() {
             commands::write_file,
             commands::list_directory,
             commands::get_working_dir,
+            streaming::stream_chat,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

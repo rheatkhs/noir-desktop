@@ -1,47 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import AppLayout from "./components/layout/AppLayout";
+import { useChat } from "./hooks/useChat";
+import { useSessions } from "./hooks/useSessions";
 
 export default function App() {
-  const [workingDir, setWorkingDir] = useState<string>("—");
+  const [workingDir, setWorkingDir] = useState("—");
 
-  async function loadWorkingDir() {
-    const dir = await invoke<string>("get_working_dir");
-    setWorkingDir(dir);
+  const {
+    sessions,
+    activeSession,
+    selectSession,
+    createSession,
+  } = useSessions();
+
+  const {
+    messages,
+    sendMessage,
+    isStreaming,
+    streamingContent,
+    agentStatus,
+  } = useChat(activeSession?.id);
+
+  // Load working directory on mount
+  useEffect(() => {
+    invoke<string>("get_working_dir")
+      .then(setWorkingDir)
+      .catch(() => setWorkingDir("unknown"));
+  }, []);
+
+  function handleNewSession() {
+    createSession();
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      {/* HUD Bar */}
-      <header className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-900 px-4 text-xs font-mono tracking-wide text-neutral-400">
-        <span className="uppercase text-neutral-100 font-semibold tracking-widest">
-          Noir Desktop
-        </span>
-        <div className="flex items-center gap-4">
-          <span>dir: {workingDir}</span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            IDLE
-          </span>
-        </div>
-      </header>
-
-      {/* Main area */}
-      <main className="flex flex-1 items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-100">
-            Grace Field House
-          </h1>
-          <p className="text-sm text-neutral-500">
-            Standalone AI Agent Workbench
-          </p>
-          <button
-            onClick={loadWorkingDir}
-            className="rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-700"
-          >
-            Test IPC
-          </button>
-        </div>
-      </main>
-    </div>
+    <AppLayout
+      model={activeSession?.model || "No model"}
+      workingDir={workingDir}
+      agentStatus={agentStatus}
+      sessions={sessions}
+      activeSessionId={activeSession?.id}
+      onSelectSession={selectSession}
+      onNewSession={handleNewSession}
+      messages={messages}
+      onSendMessage={sendMessage}
+      isStreaming={isStreaming}
+      streamingContent={streamingContent}
+    />
   );
 }
