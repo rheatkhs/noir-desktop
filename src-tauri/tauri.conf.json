@@ -42,8 +42,10 @@
     ]
   },
   "plugins": {
-    "sql": [
-      "sqlite:noir.db"
-    ]
+    "sql": {
+      "preload": [
+        "sqlite:noir.db"
+      ]
+    }
   }
 }
