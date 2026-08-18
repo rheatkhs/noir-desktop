@@ -10,6 +10,7 @@ interface UseSessionsReturn {
   createSession: (title?: string, model?: string) => Promise<string>;
   deleteSession: (id: string) => Promise<void>;
   loadMessages: (sessionId: string) => Promise<Message[]>;
+  updateSessionWorkspace: (id: string, workspace: string) => Promise<void>;
 }
 
 function generateId(): string {
@@ -89,6 +90,23 @@ export function useSessions(): UseSessionsReturn {
     },
     [activeId, fetchSessions],
   );
+  const updateSessionWorkspace = useCallback(
+    async (id: string, workspace: string) => {
+      try {
+        const db = await getDb();
+        const now = new Date().toISOString();
+        await db.execute(
+          "UPDATE sessions SET workspace = ?, updated_at = ? WHERE id = ?",
+          [workspace, now, id],
+        );
+        await fetchSessions();
+      } catch (err) {
+        console.error("Failed to update workspace:", err);
+      }
+    },
+    [fetchSessions],
+  );
+
 
   const loadMessages = useCallback(async (sessionId: string): Promise<Message[]> => {
     try {
@@ -140,5 +158,6 @@ export function useSessions(): UseSessionsReturn {
     createSession,
     deleteSession,
     loadMessages,
+    updateSessionWorkspace,
   };
 }

@@ -39,6 +39,15 @@ pub struct ToolResultEvent {
     pub duration_ms: u64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentFinishedEvent {
+    pub session_id: String,
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
+    pub total_tokens: u32,
+    pub estimated_cost: f64,
+    pub latency_ms: u64,
+}
 // ─── Internal Types ─────────────────────────────────────────────
 
 #[derive(Debug, Clone)]
@@ -250,7 +259,12 @@ pub async fn run_agent(
     user_message: String,
     workspace: String,
     escape_plan: bool,
+    session_id: String,
 ) -> Result<(), String> {
+    let start_time = std::time::Instant::now();
+    let mut total_prompt_length = 0;
+    let mut total_completion_length = 0;
+
     // Build conversation with system prompt
     let mut conversation: Vec<ChatMessage> = vec![
         ChatMessage {
@@ -266,6 +280,9 @@ pub async fn run_agent(
     for iteration in 0..MAX_ITERATIONS {
         // ── 1. Thinking ─────────────────────────────────────────
         emit_status(&app, "thinking");
+
+        let prompt_len: usize = conversation.iter().map(|msg| msg.content.len()).sum();
+        total_prompt_length += prompt_len;
 
         // ── 2. Call LLM ─────────────────────────────────────────
         let (text, tool_calls) = match call_llm(&config, conversation.clone(), &app).await {
@@ -286,6 +303,7 @@ pub async fn run_agent(
         if tool_calls.is_empty() {
             // Add the assistant's text to conversation
             if !text.is_empty() {
+                total_completion_length += text.len();
                 conversation.push(ChatMessage {
                     role: "assistant".to_string(),
                     content: text,
@@ -294,12 +312,30 @@ pub async fn run_agent(
 
             let _ = app.emit("chat-stream", StreamEvent::Done { total_tokens: None });
             emit_status(&app, "idle");
+
+            let prompt_tokens = (total_prompt_length / 4) as u32;
+            let completion_tokens = (total_completion_length / 4) as u32;
+            let total_tokens = prompt_tokens + completion_tokens;
+            let estimated_cost = (prompt_tokens as f64 * 0.0000025) + (completion_tokens as f64 * 0.000010);
+            let latency_ms = start_time.elapsed().as_millis() as u64;
+
+            let finished_event = AgentFinishedEvent {
+                session_id: session_id.clone(),
+                prompt_tokens,
+                completion_tokens,
+                total_tokens,
+                estimated_cost,
+                latency_ms,
+            };
+            let _ = app.emit("agent-finished", finished_event);
+
             return Ok(());
         }
 
         // ── 4. Has tool calls → process each ────────────────────
         // Add assistant message with text (if any) to conversation
         if !text.is_empty() {
+            total_completion_length += text.len();
             conversation.push(ChatMessage {
                 role: "assistant".to_string(),
                 content: text,
@@ -307,6 +343,7 @@ pub async fn run_agent(
         }
 
         for tool_call in &tool_calls {
+            total_completion_length += tool_call.tool_name.len() + tool_call.input.len();
             let classification = classify_action(&tool_call.tool_name, &tool_call.input);
 
             // ── 4a. Gate: require approval for destructive actions ──

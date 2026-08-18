@@ -18,6 +18,11 @@ interface AppLayoutProps {
   streamingContent?: string;
   onSettingsClick?: () => void;
   agentTag?: string;
+  onHudClick?: () => void;
+  onDirClick?: () => void;
+  onDeleteSession: (id: string) => void;
+  onExportSession?: () => void;
+  activeSessionTitle?: string;
 }
 
 export default function AppLayout({
@@ -35,6 +40,11 @@ export default function AppLayout({
   streamingContent,
   onSettingsClick,
   agentTag,
+  onHudClick,
+  onDirClick,
+  onDeleteSession,
+  onExportSession,
+  activeSessionTitle,
 }: AppLayoutProps) {
   return (
     <div className="flex h-screen flex-col bg-neutral-950 text-neutral-100">
@@ -44,6 +54,8 @@ export default function AppLayout({
         status={agentStatus}
         tokenCount={tokenCount}
         agentTag={agentTag}
+        onHudClick={onHudClick}
+        onDirClick={onDirClick}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -53,6 +65,7 @@ export default function AppLayout({
           onSelect={onSelectSession}
           onNew={onNewSession}
           onSettingsClick={onSettingsClick}
+          onDeleteSession={onDeleteSession}
         />
 
         <ChatPanel
@@ -60,6 +73,8 @@ export default function AppLayout({
           onSend={onSendMessage}
           isStreaming={isStreaming}
           streamingContent={streamingContent}
+          onExportSession={onExportSession}
+          sessionTitle={activeSessionTitle}
         />
       </div>
     </div>

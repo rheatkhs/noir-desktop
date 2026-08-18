@@ -7,6 +7,8 @@ interface HudBarProps {
   status: AgentStatus;
   tokenCount?: number;
   agentTag?: string;
+  onHudClick?: () => void;
+  onDirClick?: () => void;
 }
 
 const STATUS_CONFIG: Record<AgentStatus, { color: string; pulse: boolean; label: string }> = {
@@ -22,12 +24,26 @@ function truncateDir(dir: string, maxLen = 32): string {
   return "…" + dir.slice(dir.length - maxLen + 1);
 }
 
-export default function HudBar({ model, workingDir, status, tokenCount, agentTag }: HudBarProps) {
+export default function HudBar({
+  model,
+  workingDir,
+  status,
+  tokenCount,
+  agentTag,
+  onHudClick,
+  onDirClick,
+}: HudBarProps) {
   const cfg = STATUS_CONFIG[status];
 
   return (
     <header className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-900 px-4 text-xs font-mono tracking-wide text-neutral-400">
-      <span className="uppercase text-neutral-100 font-semibold tracking-widest select-none">
+      <span
+        onClick={onHudClick}
+        className={cn(
+          "uppercase font-semibold tracking-widest select-none",
+          onHudClick ? "text-neutral-100 cursor-pointer hover:text-neutral-200" : "text-neutral-100"
+        )}
+      >
         NOIR DESKTOP
       </span>
 
@@ -38,12 +54,28 @@ export default function HudBar({ model, workingDir, status, tokenCount, agentTag
           </span>
         )}
         {tokenCount !== undefined && (
-          <span className="text-neutral-500 tabular-nums">{tokenCount.toLocaleString()} tok</span>
+          <span
+            onClick={onHudClick}
+            className={cn(
+              "tabular-nums",
+              onHudClick ? "text-neutral-500 cursor-pointer hover:text-neutral-300" : "text-neutral-500"
+            )}
+          >
+            {tokenCount.toLocaleString()} tok
+          </span>
         )}
 
         <span className="text-neutral-300">{model}</span>
 
-        <span className="text-neutral-500" title={workingDir}>
+        <span
+          onClick={onDirClick}
+          className={cn(
+            onDirClick
+              ? "text-neutral-500 cursor-pointer hover:text-neutral-200 transition-colors"
+              : "text-neutral-500"
+          )}
+          title={workingDir}
+        >
           {truncateDir(workingDir)}
         </span>
 

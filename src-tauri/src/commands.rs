@@ -106,3 +106,9 @@ pub fn get_working_dir() -> Result<String, String> {
         .map(|p| p.to_string_lossy().into_owned())
         .map_err(|e| format!("Failed to get working directory: {e}"))
 }
+
+#[command]
+pub fn set_working_dir(path: String) -> Result<(), String> {
+    std::env::set_current_dir(std::path::Path::new(&path))
+        .map_err(|e| format!("Failed to set working directory: {e}"))
+}

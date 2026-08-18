@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "react";
-import { SendHorizontal } from "lucide-react";
+import { SendHorizontal, Download } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { Message } from "../../types";
 import MessageBubble from "../chat/MessageBubble";
@@ -9,9 +9,18 @@ interface ChatPanelProps {
   onSend: (content: string) => void;
   isStreaming: boolean;
   streamingContent?: string;
+  onExportSession?: () => void;
+  sessionTitle?: string;
 }
 
-export default function ChatPanel({ messages, onSend, isStreaming, streamingContent }: ChatPanelProps) {
+export default function ChatPanel({
+  messages,
+  onSend,
+  isStreaming,
+  streamingContent,
+  onExportSession,
+  sessionTitle,
+}: ChatPanelProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -53,6 +62,23 @@ export default function ChatPanel({ messages, onSend, isStreaming, streamingCont
 
   return (
     <div className="flex flex-1 flex-col bg-neutral-950">
+      {/* Chat Header */}
+      <div className="flex h-10 shrink-0 items-center justify-between border-b border-neutral-800 bg-neutral-900/20 px-4">
+        <span className="font-mono text-xs text-neutral-400 font-medium uppercase tracking-wider">
+          {sessionTitle || "Conversation"}
+        </span>
+        {onExportSession && messages.length > 0 && (
+          <button
+            onClick={onExportSession}
+            className="flex items-center gap-1.5 rounded bg-neutral-900/60 hover:bg-neutral-800 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-neutral-300 transition border border-neutral-800/80 hover:border-neutral-700 hover:text-neutral-100"
+            title="Export session to Markdown"
+          >
+            <Download size={11} />
+            <span>Export MD</span>
+          </button>
+        )}
+      </div>
+
       {/* Message list */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-4">
         {messages.length === 0 && (

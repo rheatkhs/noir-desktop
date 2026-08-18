@@ -30,6 +30,7 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
@@ -39,6 +40,7 @@ pub fn run() {
             commands::write_file,
             commands::list_directory,
             commands::get_working_dir,
+            commands::set_working_dir,
             streaming::stream_chat,
             orchestrator::run_agent,
             identity::generate_agent_tag,
