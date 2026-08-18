@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import Database from "@tauri-apps/plugin-sql";
 import type { Session, Message, ToolCall } from "../types";
 
@@ -50,10 +51,18 @@ export function useSessions(): UseSessionsReturn {
       const id = generateId();
       const now = new Date().toISOString();
       try {
+        let tag = "";
+        try {
+          const identity = await invoke<{ tag: string }>("generate_agent_tag");
+          tag = identity.tag;
+        } catch (e) {
+          console.error("Failed to generate agent tag:", e);
+        }
+
         const db = await getDb();
         await db.execute(
           "INSERT INTO sessions (id, title, workspace, model, agent_tag, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [id, title ?? "Untitled", ".", model ?? "", "", now, now],
+          [id, title ?? "Untitled", ".", model ?? "", tag, now, now],
         );
         await fetchSessions();
         setActiveId(id);

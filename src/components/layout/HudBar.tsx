@@ -6,6 +6,7 @@ interface HudBarProps {
   workingDir: string;
   status: AgentStatus;
   tokenCount?: number;
+  agentTag?: string;
 }
 
 const STATUS_CONFIG: Record<AgentStatus, { color: string; pulse: boolean; label: string }> = {
@@ -21,7 +22,7 @@ function truncateDir(dir: string, maxLen = 32): string {
   return "…" + dir.slice(dir.length - maxLen + 1);
 }
 
-export default function HudBar({ model, workingDir, status, tokenCount }: HudBarProps) {
+export default function HudBar({ model, workingDir, status, tokenCount, agentTag }: HudBarProps) {
   const cfg = STATUS_CONFIG[status];
 
   return (
@@ -31,6 +32,11 @@ export default function HudBar({ model, workingDir, status, tokenCount }: HudBar
       </span>
 
       <div className="flex items-center gap-5">
+        {agentTag && (
+          <span className="rounded bg-neutral-800/60 px-2 py-0.5 font-mono text-[11px] tracking-wider text-neutral-400">
+            {agentTag}
+          </span>
+        )}
         {tokenCount !== undefined && (
           <span className="text-neutral-500 tabular-nums">{tokenCount.toLocaleString()} tok</span>
         )}

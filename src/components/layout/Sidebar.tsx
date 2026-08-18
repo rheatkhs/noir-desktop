@@ -8,6 +8,7 @@ interface SidebarProps {
   activeId?: string;
   onSelect: (id: string) => void;
   onNew: () => void;
+  onSettingsClick?: () => void;
 }
 
 function formatTimestamp(iso: string): string {
@@ -24,7 +25,7 @@ function formatTimestamp(iso: string): string {
   return d.toLocaleDateString();
 }
 
-export default function Sidebar({ sessions, activeId, onSelect, onNew }: SidebarProps) {
+export default function Sidebar({ sessions, activeId, onSelect, onNew, onSettingsClick }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -93,6 +94,7 @@ export default function Sidebar({ sessions, activeId, onSelect, onNew }: Sidebar
       {/* Bottom: Settings */}
       <div className="shrink-0 border-t border-neutral-800 p-2">
         <button
+          onClick={onSettingsClick}
           className="flex w-full items-center justify-center rounded p-1.5 text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-200"
           title="Settings"
         >

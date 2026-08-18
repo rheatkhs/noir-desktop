@@ -53,3 +53,40 @@ export interface DiffData {
   modified: string;
   language: string;
 }
+
+export interface ApprovalRequest {
+  id: string;
+  tool_name: string;
+  command: string;
+  classification: "safe" | "destructive" | "unknown";
+  description: string;
+}
+
+export interface ApprovalResponse {
+  id: string;
+  approved: boolean;
+}
+
+export interface AgentIdentity {
+  tag: string;
+  name: string;
+  number: number;
+}
+
+export interface ToolResult {
+  id: string;
+  tool_name: string;
+  output: string;
+  status: string;
+  duration_ms: number;
+}
+
+export interface AppSettings {
+  provider: LlmConfig["provider"];
+  model: string;
+  api_key: string;
+  base_url: string;
+  max_tokens: number;
+  temperature: number;
+  escape_plan_mode: boolean;
+}

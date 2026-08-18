@@ -40,10 +40,8 @@
     ]
   },
   "plugins": {
-    "sql": {
-      "preload": {
-        "db": "sqlite:noir.db"
-      }
-    }
+    "sql": [
+      "sqlite:noir.db"
+    ]
   }
 }

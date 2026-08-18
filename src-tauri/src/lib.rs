@@ -1,4 +1,7 @@
+mod classifier;
 mod commands;
+mod identity;
+mod orchestrator;
 mod providers;
 mod schema;
 mod streaming;
@@ -37,6 +40,8 @@ pub fn run() {
             commands::list_directory,
             commands::get_working_dir,
             streaming::stream_chat,
+            orchestrator::run_agent,
+            identity::generate_agent_tag,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
